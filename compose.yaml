@@ -1,0 +1,41 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  server:
+    build:
+      context: .
+      dockerfile: server/DockerFile
+
+    ports:
+      - "5010:5010"
+
+    depends_on:
+      - mongo
+
+    environment:
+      - PORT=5010
+      - MONGO_URI=mongodb://mongo:27017/chatapp
+      - CLIENT_ORIGIN=http://localhost:5173
+
+  client:
+    build:
+      context: .
+      dockerfile: client/DockerFile
+
+    ports:
+      - "5173:5173"
+
+    depends_on:
+      - server
+
+    environment:
+      - VITE_API_URL=http://localhost:5010
+
+volumes:
+  mongo-data:
+    driver: local
